@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,36 +33,53 @@ import androidx.compose.ui.window.Dialog
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel) {
+
+    val showDialog: Boolean by taskViewModel.showDialog.observeAsState(false)
+
     Box(modifier = Modifier.fillMaxSize()) {
-        AddtaskDialog(true, onDismiss = {}, onTaskAdded = {})
-        FabDialog(Modifier.align(Alignment.BottomEnd))
+        AddtaskDialog(
+            showDialog,
+            onDismiss = { taskViewModel.onDialogClose() },
+            onTaskAdded = { taskViewModel.onTaskCreate(it) })
+        FabDialog(Modifier.align(Alignment.BottomEnd), taskViewModel)
 
     }
 }
 
 @Composable
-fun FabDialog(modifier: Modifier) {
+fun FabDialog(modifier: Modifier, taskViewModel: TaskViewModel) {
     FloatingActionButton(onClick = {
-        //mostrar un dialogo
+        taskViewModel.onShowDailogClick()
     }, modifier = modifier) {
         Icon(imageVector = Icons.Filled.Add, contentDescription = "")
     }
 }
 
 @Composable
-fun AddtaskDialog(show:Boolean, onDismiss:() -> Unit, onTaskAdded:(String) -> Unit){
+fun AddtaskDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) -> Unit) {
     var myTask by remember {
-        mutableStateOf("")}
-    if (show){
+        mutableStateOf("")
+    }
+    if (show) {
         Dialog(onDismissRequest = { onDismiss() }) {
-            Column(Modifier.fillMaxWidth().background(Color.White).padding(16.dp)) {
-                Text(text = "Añade una tarea", fontSize = 18.sp , modifier = Modifier.align(Alignment.CenterHorizontally), fontWeight = FontWeight.Bold)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Añade una tarea",
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.size(16.dp))
-                TextField(value = myTask, onValueChange = {myTask = it})
+                TextField(value = myTask, onValueChange = { myTask = it })
                 Spacer(modifier = Modifier.size(16.dp))
-                Button(onClick = { 
-                onTaskAdded(myTask)
-                
+                Button(onClick = {
+                    onTaskAdded(myTask)
+
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Añadir tarea")
                 }
