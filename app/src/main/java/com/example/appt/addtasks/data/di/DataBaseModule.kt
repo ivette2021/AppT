@@ -1,9 +1,9 @@
-package com.example.appt.data.di
+package com.example.appt.addtasks.data.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.appt.data.TDataBase
-import com.example.appt.data.TaskDao
+import com.example.appt.addtasks.data.TDataBase
+import com.example.appt.addtasks.data.TaskDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,13 +16,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class DataBaseModule {
     @Provides
-    fun provideTaskDao(tDataBase: TDataBase):TaskDao{ //injectar el dao
+    fun provideTaskDao(tDataBase: TDataBase): TaskDao { //injectar el dao
         return tDataBase.taskDao()
     }
 
     @Provides
     @Singleton
-    fun provideTDataBase(@ApplicationContext appContext: Context): TDataBase{ //creada la db
-        return Room.databaseBuilder(appContext,TDataBase::class.java, "TaskDataBase").build()
+    fun provideTDataBase(@ApplicationContext appContext: Context): TDataBase { //creada la db
+        return Room.databaseBuilder(appContext, TDataBase::class.java, "TaskDataBase").build()
     }
 }

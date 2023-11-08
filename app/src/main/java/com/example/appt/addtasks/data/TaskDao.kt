@@ -1,6 +1,6 @@
 
 
-package com.example.appt.data
+package com.example.appt.addtasks.data
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
-     @Query("SELECT * FROM TaskEntity")
+     @Query("SELECT * from TaskEntity") 
      fun getTasks(): Flow<List<TaskEntity>>
     @Insert
     suspend fun addTask(item: TaskEntity)
