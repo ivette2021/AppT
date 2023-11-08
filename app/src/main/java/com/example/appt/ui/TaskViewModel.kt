@@ -42,4 +42,9 @@ class TaskViewModel @Inject constructor() : ViewModel() {
             it.copy(selected = !it.selected) //para generar el marcado de checkbox
         }
     }
+
+    fun onItemRemove(taskModel: TaskModel) { //este metodo de eliminar funciona aqui porque anteriormente estamos usando copy
+val task = _tasks.find {it.id == taskModel.id } //buscame tarea dentro de la lista que sea igual a taskmodel id
+        _tasks.remove(task)
+    }
 }
