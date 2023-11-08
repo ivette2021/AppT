@@ -36,6 +36,10 @@ class TaskViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onCheckBoxSelected(taskModel: TaskModel) {
-
+//primero buscams la posicion del index
+        val index = _tasks.indexOf(taskModel)
+        _tasks[index] = _tasks[index].let {
+            it.copy(selected = !it.selected) //para generar el marcado de checkbox
+        }
     }
 }

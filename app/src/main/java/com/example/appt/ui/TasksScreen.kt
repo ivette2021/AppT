@@ -83,7 +83,7 @@ fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
                 .background(Color(0xFFECECEC)), verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Ejemplo", modifier = Modifier
+                text = taskModel.task, modifier = Modifier
                     .weight(1f)
             )
             Checkbox(
