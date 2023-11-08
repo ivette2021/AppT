@@ -1,18 +1,27 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.appt
+package com.example.appt.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -30,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.appt.ui.model.TaskModel
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel) {
@@ -42,8 +52,46 @@ fun TasksScreen(taskViewModel: TaskViewModel) {
             onDismiss = { taskViewModel.onDialogClose() },
             onTaskAdded = { taskViewModel.onTaskCreate(it) })
         FabDialog(Modifier.align(Alignment.BottomEnd), taskViewModel)
-
+        TaskList(taskViewModel)
     }
+}
+
+@Composable
+fun TaskList(taskViewModel: TaskViewModel) {
+    val myTasks: List<TaskModel> = taskViewModel.task
+
+    LazyColumn { //recycler view
+        items(myTasks, key = { it.id }) { task -> //key optimiza el recycler
+            ItemTask(task, taskViewModel)
+        }
+    }
+}
+
+
+@Composable
+fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        border = BorderStroke(2.dp, Color.Black),
+        elevation = CardDefaults.cardElevation(16.dp)
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFECECEC)), verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Ejemplo", modifier = Modifier
+                    .weight(1f)
+            )
+            Checkbox(
+                checked = taskModel.selected,
+                onCheckedChange = { taskViewModel.onCheckBoxSelected(taskModel) })
+        }
+    }
+
 }
 
 @Composable
@@ -75,11 +123,15 @@ fun AddtaskDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) ->
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                TextField(value = myTask, onValueChange = { myTask = it })
+                TextField(
+                    value = myTask, onValueChange = { myTask = it },
+                    singleLine = true,
+                    maxLines = 1
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(onClick = {
                     onTaskAdded(myTask)
-
+                    myTask = ""
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Añadir tarea")
                 }
