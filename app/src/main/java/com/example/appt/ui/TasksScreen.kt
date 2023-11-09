@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,8 +20,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,33 +36,52 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.appt.ui.model.TaskModel
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel) {
-
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     val showDialog: Boolean by taskViewModel.showDialog.observeAsState(false)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AddtaskDialog(
-            showDialog,
-            onDismiss = { taskViewModel.onDialogClose() },
-            onTaskAdded = { taskViewModel.onTaskCreate(it) })
-        FabDialog(Modifier.align(Alignment.BottomEnd), taskViewModel)
-        TaskList(taskViewModel)
+    val uiState by produceState<TasksUiState>(
+        initialValue = TasksUiState.Loading,
+        key1 = lifecycle,
+        key2 = taskViewModel
+    ) {
+        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+taskViewModel.uiState.collect{value = it}
+        }
     }
+
+    when(uiState){
+        is TasksUiState.Error -> {}
+        TasksUiState.Loading -> {
+            CircularProgressIndicator()}
+        is TasksUiState.Success -> {Box(modifier = Modifier.fillMaxSize()) {
+            AddtaskDialog(
+                showDialog,
+                onDismiss = { taskViewModel.onDialogClose() },
+                onTaskAdded = { taskViewModel.onTaskCreate(it) })
+            FabDialog(Modifier.align(Alignment.BottomEnd), taskViewModel)
+            TaskList((uiState as TasksUiState.Success).tasks, taskViewModel)
+        }}
+    }
+
+
 }
 
 @Composable
-fun TaskList(taskViewModel: TaskViewModel) {
-    val myTasks: List<TaskModel> = taskViewModel.task
+fun TaskList(tasks: List<TaskModel>, taskViewModel: TaskViewModel) {
 
     LazyColumn { //recycler view
-        items(myTasks, key = { it.id }) { task -> //key optimiza el recycler
+        items(tasks, key = { it.id }) { task -> //key optimiza el recycler
             ItemTask(task, taskViewModel)
         }
     }
@@ -77,7 +95,7 @@ fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .pointerInput(Unit) {
-                detectTapGestures(onLongPress =  {
+                detectTapGestures(onLongPress = {
                     taskViewModel.onItemRemove(taskModel)
                 })
             },
@@ -104,7 +122,7 @@ fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
 @Composable
 fun FabDialog(modifier: Modifier, taskViewModel: TaskViewModel) {
     FloatingActionButton(onClick = {
-        taskViewModel.onShowDailogClick()
+        taskViewModel.onShowDialogClick()
     }, modifier = modifier) {
         Icon(imageVector = Icons.Filled.Add, contentDescription = "")
     }
